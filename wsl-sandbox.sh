@@ -74,29 +74,14 @@ for WSLX_RBIND in /usr/lib/wsl /tmp/.X11-unix; do
     fi
 done
 
-WSLX_MODE="pivot"
-WSLX_PWD_ORG=${PWD:-$(pwd)}
-
 # 切换根文件系统，并执行命令
-case "$WSLX_MODE" in
-chroot)
-    cd "$WSLX_ROOT" || exit 1
+cd "$WSLX_ROOT" || exit 1
 
-    [ $# -gt 0 ] || set -- "${SHELL:-/bin/sh}"
-    exec chroot "$WSLX_ROOT" "$@"
-    ;;
-pivot)
-    cd "$WSLX_ROOT" || exit 1
+WSLX_ROM="$(mktemp -u -p / -t .ROM.XXXXXX)"
+mkdir -p "${WSLX_ROOT}${WSLX_ROM}"
+pivot_root "${WSLX_ROOT}" "${WSLX_ROOT}${WSLX_ROM}"
+umount -l "${WSLX_ROM}"
+rm -rf "${WSLX_ROM}"
 
-    WSLX_ROM="$(mktemp -u -p / -t .ROM.XXXXXX)"
-    mkdir -p "${WSLX_ROOT}${WSLX_ROM}"
-    pivot_root "${WSLX_ROOT}" "${WSLX_ROOT}${WSLX_ROM}"
-    umount -l "${WSLX_ROM}"
-    rm -rf "${WSLX_ROM}"
-
-    [ -d "${WSLX_PWD_ORG}" ] && cd "${WSLX_PWD_ORG}"
-
-    [ $# -gt 0 ] || set -- "${SHELL:-/bin/sh}"
-    exec "$@"
-    ;;
-esac
+[ $# -gt 0 ] || set -- "${SHELL:-/bin/sh}"
+exec "$@"
