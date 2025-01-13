@@ -1,4 +1,4 @@
-# WSL-Sandbox
+# wsl-sandbox
 
 ### 安装
 
