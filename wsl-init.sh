@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 [ "$(id -u)" -ne 0 ] && echo "Please run as root" && exit 1
 

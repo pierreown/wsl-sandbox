@@ -1,4 +1,5 @@
-#!/bin/sh
+#!/bin/bash
+
 if [ -x /usr/local/wsl-sandbox/wsl-sandbox.sh ]; then
     export WSLX_ZERO_PID_FILE=/var/run/wsl-init-zero.pid
     export WSLX_NAME=wsl-init

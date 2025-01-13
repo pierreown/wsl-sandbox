@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 WSLX_ZERO_PID_FILE=/var/run/wsl-init-zero.pid
 WSLX_TIMES=0
