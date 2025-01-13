@@ -51,7 +51,8 @@ WSLX_ROOT="${WSLX_DIR}/root"
 mount -t proc proc "${WSLX_ROOT}/proc" -o rw,nosuid,nodev,noexec,noatime
 mount -t sysfs sysfs "${WSLX_ROOT}/sys" -o rw,nosuid,nodev,noexec,noatime
 mount -t binfmt_misc binfmt_misc "${WSLX_ROOT}/proc/sys/fs/binfmt_misc"
-mount -t cgroup2 cgroup2 "${WSLX_ROOT}/sys/fs/cgroup"
+# mount -t cgroup2 cgroup "${WSLX_ROOT}/sys/fs/cgroup"
+mount -o rbind "/sys/fs/cgroup" "${WSLX_ROOT}/sys/fs/cgroup"
 mount -o rbind "/dev" "${WSLX_ROOT}/dev"
 mount -o rbind "/run" "${WSLX_ROOT}/run"
 mount -o rbind "/mnt" "${WSLX_ROOT}/mnt"
