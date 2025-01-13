@@ -7,15 +7,14 @@ WSLX_SANDBOX_PREFIX="/sandbox"
 if [ "$1" == "setup" ]; then
     shift
 else
-    # 创建独立命名空间
-    [ -n "$WSLX_ZERO_PID_FILE" ] && echo "$$" >"$WSLX_ZERO_PID_FILE"
-    unset "${WSLX_ZERO_PID_FILE}"
+    WSLX_PID_FILE="$WSLX_ZERO_PID_FILE" && unset WSLX_ZERO_PID_FILE
 
+    # 创建独立命名空间
     if [ -n "$WSLX_NAME" ]; then
-        WSLX_SESSION="${WSLX_SANDBOX_PREFIX}/${WSLX_NAME}"
-        unset WSLX_NAME
+        WSLX_SESSION="${WSLX_SANDBOX_PREFIX}/${WSLX_NAME}" && unset WSLX_NAME
         mkdir -p "${WSLX_SESSION}"
 
+        echo "$$" >"${WSLX_PID_FILE:-${WSLX_SESSION}/zero.pid}"
         export WSLX_SESSION
         exec unshare -m -i -p --mount-proc --propagation slave -f -- "$0" setup "$@"
     else
@@ -23,6 +22,7 @@ else
         mkdir -p "${WSLX_SESSION}"
         trap 'rm -rf "$WSLX_SESSION"' EXIT
 
+        echo "$$" >"${WSLX_PID_FILE:-${WSLX_SESSION}/zero.pid}"
         export WSLX_SESSION
         unshare -m -i -p --mount-proc --propagation slave -f -- "$0" setup "$@"
     fi
