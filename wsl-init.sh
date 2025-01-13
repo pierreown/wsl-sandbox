@@ -55,7 +55,7 @@ END {
     print KEY " = " "\"" NEW_VALUE "\"";
 }'
 
-INI_SET() { awk -F'=' -v SECTION="$2" -v KEY="$3" -v NEW_VALUE="$4" "$AWK_SET_MODULE" "$1" >"${1}.old" && cp -f "${1}.old" "$1"; }
+INI_SET() { cp -f "$1" "${1}.old" && awk -F'=' -v SECTION="$2" -v KEY="$3" -v NEW_VALUE="$4" "$AWK_SET_MODULE" "${1}.old" >"$1"; }
 FMT() {
     FMT_TYPE="$1"
     case "$FMT_TYPE" in
@@ -82,7 +82,7 @@ enable)
 
         [ -f /etc/wsl.conf ] || touch /etc/wsl.conf
         INI_SET '/etc/wsl.conf' 'boot' 'command' '/usr/local/wsl-sandbox/wsl-boot.sh'
-        FMT SUC "Modified /etc/wsl.conf"
+        FMT SUC "Modified /etc/wsl.conf, saved old file to *.old"
 
         echo "[ -x /usr/local/wsl-sandbox/wsl-enter.sh ] && exec /usr/local/wsl-sandbox/wsl-enter.sh" >/etc/profile.d/99-wsl-init-enter.sh
         FMT SUC "Created /etc/profile.d/99-wsl-init-enter.sh"
@@ -94,7 +94,7 @@ disable)
 
         [ -f /etc/wsl.conf ] || touch /etc/wsl.conf
         INI_SET '/etc/wsl.conf' 'boot' 'command' ''
-        FMT SUC "Modified /etc/wsl.conf"
+        FMT SUC "Modified /etc/wsl.conf, saved old file to *.old"
 
         rm -f /etc/profile.d/99-wsl-init-enter.sh
         FMT SUC "Removed /etc/profile.d/99-wsl-init-enter.sh"
