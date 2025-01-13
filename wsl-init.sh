@@ -1,7 +1,5 @@
 #!/bin/bash
 
-[ "$(id -u)" -ne 0 ] && echo "Please run as root" && exit 1
-
 export E_RED="\033[31m"
 export E_GRE="\033[32m"
 export E_YEL="\033[33m"
@@ -55,9 +53,10 @@ END {
     print KEY " = " "\"" NEW_VALUE "\"";
 }'
 
-INI_SET() { cp -f "$1" "${1}.old" && awk -F'=' -v SECTION="$2" -v KEY="$3" -v NEW_VALUE="$4" "$AWK_SET_MODULE" "${1}.old" >"$1"; }
-FMT() {
-    FMT_TYPE="$1"
+ini() { cp -f -- "$1" "${1}.old" && awk -F'=' -v SECTION="$2" -v KEY="$3" -v NEW_VALUE="$4" "$AWK_SET_MODULE" "${1}.old" >"$1"; }
+
+fmt() {
+    local FMT_TYPE="$1"
     case "$FMT_TYPE" in
     TIT) shift && printf "${E_BLU}--- %s ---${E_PLA}\n" "$*" && return ;;
     SUC) shift && printf "${E_GRE}%s${E_PLA} " "$FMT_TYPE" ;;
@@ -70,42 +69,67 @@ FMT() {
 
 usage() {
     cat <<EOF
-Usage: wsl-init [enable|disable|help]
+
+Usage: $0 [command]
+
+Flags:
+  -h, --help        Show this help
+
+Commands:
+  enable            Enable WSL Init
+  disable           Disable WSL Init
 
 EOF
 }
 
+enable_wsl_init() {
+    fmt TIT "Enable WSL Init"
+
+    [ -f /etc/wsl.conf ] || touch /etc/wsl.conf
+    ini '/etc/wsl.conf' 'boot' 'command' '/usr/local/wsl-sandbox/wsl-boot.sh'
+    fmt SUC "Modified /etc/wsl.conf, saved old file to *.old"
+
+    echo "[ -x /usr/local/wsl-sandbox/wsl-enter.sh ] && exec /usr/local/wsl-sandbox/wsl-enter.sh" >/etc/profile.d/99-wsl-init-enter.sh
+    fmt SUC "Created /etc/profile.d/99-wsl-init-enter.sh"
+}
+
+disable_wsl_init() {
+    fmt TIT "Disable WSL Init"
+
+    [ -f /etc/wsl.conf ] || touch /etc/wsl.conf
+    ini '/etc/wsl.conf' 'boot' 'command' ''
+    fmt SUC "Modified /etc/wsl.conf, saved old file to *.old"
+
+    rm -f /etc/profile.d/99-wsl-init-enter.sh
+    fmt SUC "Removed /etc/profile.d/99-wsl-init-enter.sh"
+}
+
+# Check User
+[ "$(id -u)" -ne 0 ] && fmt ERR "Please run as root" >&2 && exit 1
+
+# Parse Options
+eval set -- "$(getopt -o ':h' --long 'help' -- "$@" 2>/dev/null)"
+while true; do
+    case "$1" in
+    --) shift && break ;;
+    -h | --help) usage && exit ;;
+    esac
+    shift
+done
+
+# Main Flow
 case "$1" in
 enable)
-    {
-        FMT TIT "Enable WSL Init"
-
-        [ -f /etc/wsl.conf ] || touch /etc/wsl.conf
-        INI_SET '/etc/wsl.conf' 'boot' 'command' '/usr/local/wsl-sandbox/wsl-boot.sh'
-        FMT SUC "Modified /etc/wsl.conf, saved old file to *.old"
-
-        echo "[ -x /usr/local/wsl-sandbox/wsl-enter.sh ] && exec /usr/local/wsl-sandbox/wsl-enter.sh" >/etc/profile.d/99-wsl-init-enter.sh
-        FMT SUC "Created /etc/profile.d/99-wsl-init-enter.sh"
-    }
+    enable_wsl_init
     ;;
 disable)
-    {
-        FMT TIT "Disable WSL Init"
-
-        [ -f /etc/wsl.conf ] || touch /etc/wsl.conf
-        INI_SET '/etc/wsl.conf' 'boot' 'command' ''
-        FMT SUC "Modified /etc/wsl.conf, saved old file to *.old"
-
-        rm -f /etc/profile.d/99-wsl-init-enter.sh
-        FMT SUC "Removed /etc/profile.d/99-wsl-init-enter.sh"
-    }
+    disable_wsl_init
     ;;
-help | '')
+'')
     usage
     ;;
 *)
-    FMT ERR "Invalid Command: $*" 2>&1
-    usage
-    exit 1
+    fmt ERR "Invalid Command: $*" 2>&1
+    usage && exit 1
     ;;
 esac
