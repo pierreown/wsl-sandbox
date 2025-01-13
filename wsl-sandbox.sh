@@ -98,7 +98,9 @@ umount -l "${WSLX_ROM}"
 rm -rf "${WSLX_ROM}"
 
 # change work directory
-cd "${WSLX_WORK_DIR:-"/"}"
+if [ -d "${WSLX_WORK_DIR:="/"}" ]; then
+    cd "$WSLX_WORK_DIR" 2>/dev/null || true
+fi
 unset WSLX_WORK_DIR
 
 # execute
