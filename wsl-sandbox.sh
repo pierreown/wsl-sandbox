@@ -23,7 +23,7 @@ else
         trap 'rm -rf "${WSLX_DIR}"' EXIT
 
         export WSLX_DIR
-        unshare -m -i -p --mount-proc -f -- "$0" setup "$@"
+        unshare -m -i -p --mount-proc --propagation slave -f -- "$0" setup "$@"
     fi
     exit
 fi
@@ -38,6 +38,7 @@ mount -t overlay overlay -o "lowerdir=/,upperdir=${WSLX_DIR}/upper,workdir=${WSL
 
 # 隐藏不必要的文件
 for WSLX_HIDE_ITEM in "$WSLX_SANDBOX_PREFIX" /init; do
+    [ -e "$WSLX_HIDE_ITEM" ] || continue
     WSLX_HIDE_ITEM="${WSLX_DIR}/upper${WSLX_HIDE_ITEM}"
     if [ ! -e "$WSLX_HIDE_ITEM" ]; then
         mkdir -p "$WSLX_HIDE_ITEM" && rm -rf "$WSLX_HIDE_ITEM" &&
@@ -50,9 +51,13 @@ WSLX_ROOT="${WSLX_DIR}/root"
 # 挂载必要系统目录
 mount -t proc proc "${WSLX_ROOT}/proc" -o rw,nosuid,nodev,noexec,noatime
 mount -t sysfs sysfs "${WSLX_ROOT}/sys" -o rw,nosuid,nodev,noexec,noatime
+
+# mount -o rbind "/sys/fs/cgroup" "${WSLX_ROOT}/sys/fs/cgroup"
+mount -t cgroup2 cgroup "${WSLX_ROOT}/sys/fs/cgroup"
+
+# mount -o rbind "/proc/sys/fs/binfmt_misc" "${WSLX_ROOT}/proc/sys/fs/binfmt_misc"
 mount -t binfmt_misc binfmt_misc "${WSLX_ROOT}/proc/sys/fs/binfmt_misc"
-# mount -t cgroup2 cgroup "${WSLX_ROOT}/sys/fs/cgroup"
-mount -o rbind "/sys/fs/cgroup" "${WSLX_ROOT}/sys/fs/cgroup"
+
 mount -o rbind "/dev" "${WSLX_ROOT}/dev"
 mount -o rbind "/run" "${WSLX_ROOT}/run"
 mount -o rbind "/mnt" "${WSLX_ROOT}/mnt"
