@@ -1,27 +1,51 @@
-#!/bin/sh
+#!/bin/bash
 
 set -e
 
-# 创建独立命名空间
-if [ "$1" != "setup" ]; then
+WSLX_SANDBOX_PREFIX="/sandbox"
+
+if [ "$1" == "setup" ]; then
+    shift
+else
+    # 创建独立命名空间
     [ -n "$WSLX_ZERO_PID_FILE" ] && echo "$$" >"$WSLX_ZERO_PID_FILE"
-    unset WSLX_ZERO_PID_FILE
-    exec unshare -m -i -p --mount-proc -f -- "$0" setup "$@"
+
+    if [ -n "$WSLX_NAME" ]; then
+        WSLX_DIR="${WSLX_SANDBOX_PREFIX}/${WSLX_NAME}"
+        mkdir -p "${WSLX_DIR}"
+
+        export WSLX_DIR
+        exec unshare -m -i -p --mount-proc -f -- "$0" setup "$@"
+    else
+        WSLX_DIR="$(mktemp -u -p "${WSLX_SANDBOX_PREFIX}" -t overlay.XXXXXXXX)"
+        mkdir -p "${WSLX_DIR}"
+
+        trap 'rm -rf "${WSLX_DIR}"' EXIT
+
+        export WSLX_DIR
+        unshare -m -i -p --mount-proc -f -- "$0" setup "$@"
+    fi
+    exit
 fi
 
-shift
+if [ -z "$WSLX_DIR" ] || [ ! -d "$WSLX_DIR" ]; then
+    echo "invalid operation" >&2 && exit 1
+fi
 
 # 挂载 overlay 文件系统
-mkdir -p /overlay/upper /overlay/work /overlay/root
-mount -t overlay overlay -o lowerdir=/,upperdir=/overlay/upper,workdir=/overlay/work /overlay/root
+mkdir -p "${WSLX_DIR}/upper" "${WSLX_DIR}/work" "${WSLX_DIR}/root"
+mount -t overlay overlay -o "lowerdir=/,upperdir=${WSLX_DIR}/upper,workdir=${WSLX_DIR}/work" "${WSLX_DIR}/root"
 
 # 隐藏不必要的文件
-for WSLX_HIDE_ITEM in /overlay /init; do
-    WSLX_HIDE_ITEM="/overlay/upper${WSLX_HIDE_ITEM}"
-    [ ! -e "$WSLX_HIDE_ITEM" ] && mknod "$WSLX_HIDE_ITEM" c 0 0 # 创建字符设备文件 (0, 0)
+for WSLX_HIDE_ITEM in "$WSLX_SANDBOX_PREFIX" /init; do
+    WSLX_HIDE_ITEM="${WSLX_DIR}/upper${WSLX_HIDE_ITEM}"
+    if [ ! -e "$WSLX_HIDE_ITEM" ]; then
+        mkdir -p "$WSLX_HIDE_ITEM" && rm -rf "$WSLX_HIDE_ITEM" &&
+            mknod "$WSLX_HIDE_ITEM" c 0 0 # 创建字符设备文件 (0, 0)
+    fi
 done
 
-WSLX_ROOT="/overlay/root"
+WSLX_ROOT="${WSLX_DIR}/root"
 
 # 挂载必要系统目录
 mount -t proc proc "${WSLX_ROOT}/proc" -o rw,nosuid,nodev,noexec,noatime
