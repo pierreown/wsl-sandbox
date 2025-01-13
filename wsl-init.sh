@@ -71,6 +71,7 @@ FMT() {
 usage() {
     cat <<EOF
 Usage: wsl-init [enable|disable|help]
+
 EOF
 }
 
@@ -99,7 +100,7 @@ disable)
         FMT SUC "Removed /etc/profile.d/99-wsl-init-enter.sh"
     }
     ;;
-help)
+help | '')
     usage
     ;;
 *)
