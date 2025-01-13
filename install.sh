@@ -21,45 +21,62 @@ FMT() {
     printf "%s\n" "$*"
 }
 
+usage() {
+    cat <<EOF
+
+Usage: install [options]
+
+Flags:
+  -f, --force       Force install dependencies
+  -h, --help        Show this help
+
+EOF
+}
+
+# Check User
 [ "$(id -u)" -ne 0 ] && FMT ERR "Please run as root" >&2 && exit 1
 
-eval set -- "$(getopt -o ':f' --long 'force' -- "$@" 2>/dev/null)"
-
-FORCE=0
+# Options
+eval set -- "$(getopt -o ':fh' --long 'force,cdn,help' -- "$@" 2>/dev/null)"
+FORCE=0 CDN=0
 while true; do
     case "$1" in
     --) shift && break ;;
-    -f | --force) export FORCE="1" && shift ;;
-    *) shift ;;
+    -f | --force) FORCE="1" ;;
+    --cdn) CDN="1" ;;
+    -h | --help) usage && exit ;;
     esac
+    shift
 done
 
 {
     FMT TIT "Install Dependencies"
 
+    # Check Dependencies
     MISSED_CMD=0
     if [ "$FORCE" -ne 1 ]; then
         for CMD in wget unshare nsenter mount umount; do
-            CMD_PATH=$(command -v "$CMD")
-            if [ -z "$CMD_PATH" ]; then
-                MISSED_CMD=1
-                FMT TIP "Missing Command: $CMD"
-            elif [ "$(readlink -f "$CMD_PATH")" = "/bin/busybox" ]; then
-                MISSED_CMD=1
-                FMT INF "Found Command, but its busybox: $CMD"
-            fi
+            CMD_PATH=$(command -v "$CMD" 2>/dev/null || true)
+            [ -z "$CMD_PATH" ] || CMD_PATH=$(readlink -f "$CMD_PATH" 2>/dev/null || true)
+            case "$CMD_PATH" in
+            */busybox) MISSED_CMD=1 && FMT TIP "Found Command, but its busybox: $CMD" ;;
+            "") MISSED_CMD=1 && FMT TIP "Missing Command: $CMD" ;;
+            esac
         done
     fi
 
     if [ "$FORCE" -ne 1 ] && [ "$MISSED_CMD" -ne 1 ]; then
+        # All Dependencies Found
         FMT INF "Not Found Missing Dependencies, Skip"
     else
+        # Install Dependencies
+
         [ "$FORCE" -eq 1 ] || FMT INF "Missing required commands, trying to install dependencies..."
 
         PKGS="" EXIT_CODE=0
         if type apt-get >/dev/null 2>&1; then
             apt-get update
-            apt-get install -y wget util-linux
+            apt-get install -q -y wget util-linux
             EXIT_CODE=$?
             PKGS="wget util-linux"
         elif type dnf >/dev/null 2>&1; then
@@ -94,19 +111,23 @@ done
 {
     FMT TIT "Download & Install"
 
+    # clean up old files
     rm -rf /usr/local/wsl-sandbox
     mkdir -p /usr/local/wsl-sandbox
 
+    # download
     BASE_URL="https://raw.githubusercontent.com/pierreown/wsl-sandbox/main"
+    [ "$CDN" -eq 1 ] && BASE_URL="https://cdn.jsdelivr.net/gh/pierreown/wsl-sandbox@main"
     for SCRIPT in wsl-sandbox.sh wsl-init.sh wsl-boot.sh wsl-enter.sh; do
         if wget -q -t 3 -w 1 -T 5 -O "/usr/local/wsl-sandbox/${SCRIPT}" "${BASE_URL}/${SCRIPT}"; then
             chmod +x "/usr/local/wsl-sandbox/${SCRIPT}"
             FMT SUC "Downloaded /usr/local/wsl-sandbox/${SCRIPT}"
         else
-            FMT ERR "Failed to download /usr/local/wsl-sandbox/${SCRIPT}" >&2
+            FMT ERR "Failed to download /usr/local/wsl-sandbox/${SCRIPT}" >&2 && exit 1
         fi
     done
 
+    # link to PATH
     for SCRIPT in wsl-sandbox.sh wsl-init.sh; do
         ln -sf "/usr/local/wsl-sandbox/${SCRIPT}" "/usr/local/bin/${SCRIPT%.sh}"
         FMT SUC "Linked /usr/local/wsl-sandbox/${SCRIPT} => /usr/local/bin/${SCRIPT%.sh}"
