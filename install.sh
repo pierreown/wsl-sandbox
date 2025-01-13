@@ -116,9 +116,13 @@ done
     rm -rf /usr/local/wsl-sandbox
     mkdir -p /usr/local/wsl-sandbox
 
-    # download
     BASE_URL="https://raw.githubusercontent.com/pierreown/wsl-sandbox/main"
-    [ "$CDN" -eq 1 ] && BASE_URL="https://cdn.jsdelivr.net/gh/pierreown/wsl-sandbox@main"
+    if [ "$CDN" -eq 1 ]; then
+        FMT INF "Use CDN"
+        BASE_URL="https://cdn.jsdelivr.net/gh/pierreown/wsl-sandbox@main"
+    fi
+
+    # download
     for SCRIPT in wsl-sandbox.sh wsl-init.sh wsl-boot.sh wsl-enter.sh; do
         if wget -q -t 3 -w 1 -T 5 -O "/usr/local/wsl-sandbox/${SCRIPT}" "${BASE_URL}/${SCRIPT}"; then
             chmod +x "/usr/local/wsl-sandbox/${SCRIPT}"
