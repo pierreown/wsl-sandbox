@@ -11,5 +11,5 @@ bash -c "$(curl -fsSL https://raw.githubusercontent.com/pierreown/wsl-sandbox/ma
 使用 CDN 加速：
 
 ```bash
-bash -c "$(curl -fsSL https://cdn.jsdelivr.net/gh/pierreown/wsl-sandbox@main/install.sh)" -- --CDN
+bash -c "$(curl -fsSL https://cdn.jsdelivr.net/gh/pierreown/wsl-sandbox@main/install.sh)" -- --cdn
 ```
