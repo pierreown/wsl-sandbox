@@ -9,24 +9,28 @@ if [ "$1" == "setup" ]; then
 else
     # 创建独立命名空间
     [ -n "$WSLX_ZERO_PID_FILE" ] && echo "$$" >"$WSLX_ZERO_PID_FILE"
+    unset "${WSLX_ZERO_PID_FILE}"
 
     if [ -n "$WSLX_NAME" ]; then
-        WSLX_DIR="${WSLX_SANDBOX_PREFIX}/${WSLX_NAME}"
-        mkdir -p "${WSLX_DIR}"
+        WSLX_SESSION="${WSLX_SANDBOX_PREFIX}/${WSLX_NAME}"
+        unset WSLX_NAME
+        mkdir -p "${WSLX_SESSION}"
 
-        export WSLX_DIR
-        exec unshare -m -i -p --mount-proc -f -- "$0" setup "$@"
+        export WSLX_SESSION
+        exec unshare -m -i -p --mount-proc --propagation slave -f -- "$0" setup "$@"
     else
-        WSLX_DIR="$(mktemp -u -p "${WSLX_SANDBOX_PREFIX}" -t overlay.XXXXXXXX)"
-        mkdir -p "${WSLX_DIR}"
+        WSLX_SESSION="$(mktemp -u -p "${WSLX_SANDBOX_PREFIX}" -t overlay.XXXXXXXX)"
+        mkdir -p "${WSLX_SESSION}"
+        trap 'rm -rf "$WSLX_SESSION"' EXIT
 
-        trap 'rm -rf "${WSLX_DIR}"' EXIT
-
-        export WSLX_DIR
+        export WSLX_SESSION
         unshare -m -i -p --mount-proc --propagation slave -f -- "$0" setup "$@"
     fi
     exit
 fi
+
+WSLX_DIR="$WSLX_SESSION"
+unset WSLX_SESSION
 
 if [ -z "$WSLX_DIR" ] || [ ! -d "$WSLX_DIR" ]; then
     echo "invalid operation" >&2 && exit 1
@@ -71,6 +75,7 @@ for WSLX_RBIND in /usr/lib/wsl /tmp/.X11-unix; do
 done
 
 WSLX_MODE="pivot"
+WSLX_PWD_ORG=${PWD:-$(pwd)}
 
 # 切换根文件系统，并执行命令
 case "$WSLX_MODE" in
@@ -88,6 +93,8 @@ pivot)
     pivot_root "${WSLX_ROOT}" "${WSLX_ROOT}${WSLX_ROM}"
     umount -l "${WSLX_ROM}"
     rm -rf "${WSLX_ROM}"
+
+    [ -d "${WSLX_PWD_ORG}" ] && cd "${WSLX_PWD_ORG}"
 
     [ $# -gt 0 ] || set -- "${SHELL:-/bin/sh}"
     exec "$@"
