@@ -29,16 +29,22 @@ FMT() {
     if type apt-get >/dev/null 2>&1; then
         apt-get update
         apt-get install -y wget util-linux
+        FMT SUC "Installed wget util-linux"
     elif type dnf >/dev/null 2>&1; then
         dnf install -y wget util-linux
+        FMT SUC "Installed wget util-linux"
     elif type yum >/dev/null 2>&1; then
         yum install -y wget util-linux
+        FMT SUC "Installed wget util-linux"
     elif type apk >/dev/null 2>&1; then
         apk add -q wget util-linux
+        FMT SUC "Installed wget util-linux"
     elif type zypper >/dev/null 2>&1; then
         zypper -q install -y wget util-linux
+        FMT SUC "Installed wget util-linux"
     elif type pacman >/dev/null 2>&1; then
         pacman -Syu --noconfirm wget util-linux
+        FMT SUC "Installed wget util-linux"
     else
         MISSED_CMD=0
         for CMD in wget unshare nsenter mount umount; do
