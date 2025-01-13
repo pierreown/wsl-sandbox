@@ -16,7 +16,7 @@ else
 
         echo "$$" >"${WSLX_PID_FILE:-${WSLX_SESSION}/zero.pid}"
         export WSLX_SESSION
-        exec unshare -m -u -i -p --mount-proc --propagation slave -f -- "$0" setup "$@"
+        exec unshare -m -u -i -p -C --mount-proc --propagation slave -f -- "$0" setup "$@"
     else
         WSLX_SESSION="$(mktemp -u -p "${WSLX_SANDBOX_PREFIX}" -t overlay.XXXXXXXX)"
         mkdir -p "${WSLX_SESSION}"
@@ -24,7 +24,7 @@ else
 
         echo "$$" >"${WSLX_PID_FILE:-${WSLX_SESSION}/zero.pid}"
         export WSLX_SESSION
-        unshare -m -i -p --mount-proc --propagation slave -f -- "$0" setup "$@"
+        unshare -m -u -i -p -C --mount-proc --propagation slave -f -- "$0" setup "$@"
     fi
     exit
 fi
@@ -37,8 +37,9 @@ if [ -z "$WSLX_DIR" ] || [ ! -d "$WSLX_DIR" ]; then
 fi
 
 # 挂载 overlay 文件系统
-mkdir -p "${WSLX_DIR}/upper" "${WSLX_DIR}/work" "${WSLX_DIR}/root"
-mount -t overlay overlay -o "lowerdir=/,upperdir=${WSLX_DIR}/upper,workdir=${WSLX_DIR}/work" "${WSLX_DIR}/root"
+WSLX_ROOT="${WSLX_DIR}/root"
+mkdir -p "${WSLX_DIR}/upper" "${WSLX_DIR}/work" "$WSLX_ROOT"
+mount -t overlay overlay -o "lowerdir=/,upperdir=${WSLX_DIR}/upper,workdir=${WSLX_DIR}/work" "$WSLX_ROOT"
 
 # 隐藏不必要的文件
 for WSLX_HIDE_ITEM in "$WSLX_SANDBOX_PREFIX" /init; do
@@ -50,7 +51,9 @@ for WSLX_HIDE_ITEM in "$WSLX_SANDBOX_PREFIX" /init; do
     fi
 done
 
-WSLX_ROOT="${WSLX_DIR}/root"
+# 挂载嵌套目录
+mkdir -p "${WSLX_DIR}/nested" "${WSLX_ROOT}${WSLX_SANDBOX_PREFIX}"
+mount -o bind "${WSLX_DIR}/nested" "${WSLX_ROOT}/${WSLX_SANDBOX_PREFIX}"
 
 # 挂载必要系统目录
 mount -t proc proc "${WSLX_ROOT}/proc" -o rw,nosuid,nodev,noexec,noatime
