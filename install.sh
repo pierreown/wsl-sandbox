@@ -106,6 +106,7 @@ done
         [ "$EXIT_CODE" -ne 0 ] && FMT ERR "Failed to install dependencies" >&2 && exit 1
         FMT SUC "Installed $PKGS"
     fi
+    echo
 }
 
 {
@@ -132,4 +133,5 @@ done
         ln -sf "/usr/local/wsl-sandbox/${SCRIPT}" "/usr/local/bin/${SCRIPT%.sh}"
         FMT SUC "Linked /usr/local/wsl-sandbox/${SCRIPT} => /usr/local/bin/${SCRIPT%.sh}"
     done
+    echo
 }
