@@ -7,14 +7,19 @@ WSLX_SANDBOX_PREFIX="/sandbox"
 if [ "$1" == "setup" ]; then
     shift
 else
+    # create custom PID file
     WSLX_PID_FILE="$WSLX_ZERO_PID_FILE" && unset WSLX_ZERO_PID_FILE
+    [ -n "$WSLX_PID_FILE" ] && echo "$$" >"$WSLX_PID_FILE"
 
-    # 创建独立命名空间
+    # create session directory
     if [ -n "$WSLX_NAME" ]; then
         WSLX_SESSION="${WSLX_SANDBOX_PREFIX}/${WSLX_NAME}" && unset WSLX_NAME
         mkdir -p "${WSLX_SESSION}"
 
-        echo "$$" >"${WSLX_PID_FILE:-${WSLX_SESSION}/zero.pid}"
+        # create default PID file
+        echo "$$" >"${WSLX_SESSION}/zero.pid"
+
+        # create namespace to run sandbox
         export WSLX_SESSION
         exec unshare -m -u -i -p -C --mount-proc --propagation slave -f -- "$0" setup "$@"
     else
@@ -22,7 +27,10 @@ else
         mkdir -p "${WSLX_SESSION}"
         trap 'rm -rf "$WSLX_SESSION"' EXIT
 
-        echo "$$" >"${WSLX_PID_FILE:-${WSLX_SESSION}/zero.pid}"
+        # create default PID file
+        echo "$$" >"${WSLX_SESSION}/zero.pid"
+
+        # create namespace to run sandbox
         export WSLX_SESSION
         unshare -m -u -i -p -C --mount-proc --propagation slave -f -- "$0" setup "$@"
     fi
@@ -32,16 +40,17 @@ fi
 WSLX_DIR="$WSLX_SESSION"
 unset WSLX_SESSION
 
+# check session directory
 if [ -z "$WSLX_DIR" ] || [ ! -d "$WSLX_DIR" ]; then
     echo "invalid operation" >&2 && exit 1
 fi
 
-# 挂载 overlay 文件系统
+# mount overlay file system
 WSLX_ROOT="${WSLX_DIR}/root"
 mkdir -p "${WSLX_DIR}/upper" "${WSLX_DIR}/work" "$WSLX_ROOT"
 mount -t overlay overlay -o "lowerdir=/,upperdir=${WSLX_DIR}/upper,workdir=${WSLX_DIR}/work" "$WSLX_ROOT"
 
-# 隐藏不必要的文件
+# hide some files
 for WSLX_HIDE_ITEM in "$WSLX_SANDBOX_PREFIX" /init; do
     [ -e "$WSLX_HIDE_ITEM" ] || continue
     WSLX_HIDE_ITEM="${WSLX_DIR}/upper${WSLX_HIDE_ITEM}"
@@ -51,11 +60,11 @@ for WSLX_HIDE_ITEM in "$WSLX_SANDBOX_PREFIX" /init; do
     fi
 done
 
-# 挂载嵌套目录
+# mount nested directory
 mkdir -p "${WSLX_DIR}/nested" "${WSLX_ROOT}${WSLX_SANDBOX_PREFIX}"
 mount -o bind "${WSLX_DIR}/nested" "${WSLX_ROOT}/${WSLX_SANDBOX_PREFIX}"
 
-# 挂载必要系统目录
+# mount system directories
 mount -t proc proc "${WSLX_ROOT}/proc" -o rw,nosuid,nodev,noexec,noatime
 mount -t sysfs sysfs "${WSLX_ROOT}/sys" -o rw,nosuid,nodev,noexec,noatime
 
@@ -69,7 +78,7 @@ mount -o rbind "/dev" "${WSLX_ROOT}/dev"
 mount -o rbind "/run" "${WSLX_ROOT}/run"
 mount -o rbind "/mnt" "${WSLX_ROOT}/mnt"
 
-# 挂载 WSL 目录
+# mount about wsl directories
 for WSLX_RBIND in /usr/lib/wsl /tmp/.X11-unix; do
     WSLX_RBIND_DST="${WSLX_ROOT}${WSLX_RBIND}"
     if [ -d "${WSLX_RBIND}" ] && [ -d "${WSLX_RBIND_DST}" ]; then
@@ -77,14 +86,19 @@ for WSLX_RBIND in /usr/lib/wsl /tmp/.X11-unix; do
     fi
 done
 
-# 切换根文件系统，并执行命令
+# change root directory
 cd "$WSLX_ROOT" || exit 1
-
 WSLX_ROM="$(mktemp -u -p / -t .ROM.XXXXXX)"
 mkdir -p "${WSLX_ROOT}${WSLX_ROM}"
 pivot_root "${WSLX_ROOT}" "${WSLX_ROOT}${WSLX_ROM}"
 umount -l "${WSLX_ROM}"
 rm -rf "${WSLX_ROM}"
 
+# change work directory
+: "${WSLX_WORK_DIR:="${PWD:-"$(pwd)"}"}"
+cd "${WSLX_WORK_DIR:="/"}"
+unset WSLX_WORK_DIR
+
+# execute
 [ $# -gt 0 ] || set -- "${SHELL:-/bin/sh}"
 exec "$@"
