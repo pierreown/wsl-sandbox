@@ -23,19 +23,49 @@ FMT() {
 
 [ "$(id -u)" -ne 0 ] && FMT ERR "Please run as root" >&2 && exit 1
 
-FMT TIT "Download & Install"
+{
+    FMT TIT "Install Dependencies"
 
-rm -rf /usr/local/wsl-sandbox
-mkdir -p /usr/local/wsl-sandbox
+    if type apt-get >/dev/null 2>&1; then
+        apt-get update
+        apt-get install -y wget util-linux
+    elif type dnf >/dev/null 2>&1; then
+        dnf install -y wget util-linux
+    elif type yum >/dev/null 2>&1; then
+        yum install -y wget util-linux
+    elif type apk >/dev/null 2>&1; then
+        apk add -q wget util-linux
+    elif type zypper >/dev/null 2>&1; then
+        zypper -q install -y wget util-linux
+    elif type pacman >/dev/null 2>&1; then
+        pacman -Syu --noconfirm wget util-linux
+    else
+        MISSED_CMD=0
+        for CMD in wget unshare nsenter mount umount; do
+            if ! type "$CMD" >/dev/null 2>&1; then
+                MISSED_CMD=1
+                FMT WRN "Command not found: $CMD" >&2
+            fi
+        done
+        [ "$MISSED_CMD" -eq 1 ] && FMT ERR "Missing required dependencies" >&2 && exit 1
+    fi
+}
 
-BASE_URL="https://raw.githubusercontent.com/pierreown/wsl-sandbox/main"
-for SCRIPT in wsl-sandbox.sh wsl-init.sh wsl-boot.sh wsl-enter.sh; do
-    wget -q "${BASE_URL}/${SCRIPT}" -O "/usr/local/wsl-sandbox/${SCRIPT}"
-    chmod +x "/usr/local/wsl-sandbox/${SCRIPT}"
-    FMT SUC "Downloaded /usr/local/wsl-sandbox/${SCRIPT}"
-done
+{
+    FMT TIT "Download & Install"
 
-for SCRIPT in wsl-sandbox.sh wsl-init.sh; do
-    ln -sf "/usr/local/wsl-sandbox/${SCRIPT}" "/usr/local/bin/${SCRIPT%.sh}"
-    FMT SUC "Linked /usr/local/wsl-sandbox/${SCRIPT} => /usr/local/bin/${SCRIPT%.sh}"
-done
+    rm -rf /usr/local/wsl-sandbox
+    mkdir -p /usr/local/wsl-sandbox
+
+    BASE_URL="https://raw.githubusercontent.com/pierreown/wsl-sandbox/main"
+    for SCRIPT in wsl-sandbox.sh wsl-init.sh wsl-boot.sh wsl-enter.sh; do
+        wget -q "${BASE_URL}/${SCRIPT}" -O "/usr/local/wsl-sandbox/${SCRIPT}"
+        chmod +x "/usr/local/wsl-sandbox/${SCRIPT}"
+        FMT SUC "Downloaded /usr/local/wsl-sandbox/${SCRIPT}"
+    done
+
+    for SCRIPT in wsl-sandbox.sh wsl-init.sh; do
+        ln -sf "/usr/local/wsl-sandbox/${SCRIPT}" "/usr/local/bin/${SCRIPT%.sh}"
+        FMT SUC "Linked /usr/local/wsl-sandbox/${SCRIPT} => /usr/local/bin/${SCRIPT%.sh}"
+    done
+}

@@ -39,5 +39,5 @@ done
 # Found init process, enter its namespace and exec shell
 if [ -n "$WSLX_INIT_PID" ]; then
     : "${PWD:=$(pwd)}"
-    exec /usr/bin/nsenter -m -i -p -w"$PWD" -t "$WSLX_INIT_PID" -- "${SHELL:-/bin/sh}"
+    exec /usr/bin/nsenter -m -u -i -p -w"$PWD" -t "$WSLX_INIT_PID" -- "${SHELL:-/bin/sh}"
 fi

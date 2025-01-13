@@ -16,7 +16,7 @@ else
 
         echo "$$" >"${WSLX_PID_FILE:-${WSLX_SESSION}/zero.pid}"
         export WSLX_SESSION
-        exec unshare -m -i -p --mount-proc --propagation slave -f -- "$0" setup "$@"
+        exec unshare -m -u -i -p --mount-proc --propagation slave -f -- "$0" setup "$@"
     else
         WSLX_SESSION="$(mktemp -u -p "${WSLX_SANDBOX_PREFIX}" -t overlay.XXXXXXXX)"
         mkdir -p "${WSLX_SESSION}"
