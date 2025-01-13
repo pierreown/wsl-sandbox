@@ -41,7 +41,7 @@ if [ -n "$WSLX_INIT_PID" ]; then
     : "${WSLX_WORK_DIR:="$(pwd)"}"
     export WSLX_WORK_DIR
 
-    [ $# -gt 0 ] || set -- /bin/bash
+    [ $# -gt 0 ] || set -- "${SHELL:-/bin/bash}"
 
     # shellcheck disable=SC2016
     exec /usr/bin/nsenter -m -u -i -p -C -t "$WSLX_INIT_PID" -- sh -c '
