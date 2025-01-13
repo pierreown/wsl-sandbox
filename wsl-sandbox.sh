@@ -2,11 +2,10 @@
 
 set -e
 
-WSLX_ZERO_PID_FILE=/var/run/wsl-init-swapper.pid
-
 # 创建独立命名空间
 if [ "$1" != "setup" ]; then
-    echo "$$" >"$WSLX_ZERO_PID_FILE"
+    [ -n "$WSLX_ZERO_PID_FILE" ] && echo "$$" >"$WSLX_ZERO_PID_FILE"
+    unset WSLX_ZERO_PID_FILE
     exec unshare -m -i -p --mount-proc -f -- "$0" setup "$@"
 fi
 
