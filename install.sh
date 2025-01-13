@@ -1,5 +1,7 @@
 #!/bin/sh
 
+set -e
+
 export E_RED="\033[31m"
 export E_GRE="\033[32m"
 export E_YEL="\033[33m"
