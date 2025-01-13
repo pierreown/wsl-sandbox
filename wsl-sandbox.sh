@@ -11,6 +11,9 @@ else
     WSLX_PID_FILE="$WSLX_ZERO_PID_FILE" && unset WSLX_ZERO_PID_FILE
     [ -n "$WSLX_PID_FILE" ] && echo "$$" >"$WSLX_PID_FILE"
 
+    : "${WSLX_WORK_DIR:="$(pwd)"}"
+    export WSLX_WORK_DIR
+
     # create session directory
     if [ -n "$WSLX_NAME" ]; then
         WSLX_SESSION="${WSLX_SANDBOX_PREFIX}/${WSLX_NAME}" && unset WSLX_NAME
@@ -95,8 +98,7 @@ umount -l "${WSLX_ROM}"
 rm -rf "${WSLX_ROM}"
 
 # change work directory
-: "${WSLX_WORK_DIR:="${PWD:-"$(pwd)"}"}"
-cd "${WSLX_WORK_DIR:="/"}"
+cd "${WSLX_WORK_DIR:-"/"}"
 unset WSLX_WORK_DIR
 
 # execute
