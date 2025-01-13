@@ -41,10 +41,10 @@ if [ -n "$WSLX_INIT_PID" ]; then
     : "${WSLX_WORK_DIR:="$(pwd)"}"
     export WSLX_WORK_DIR
 
-    [ $# -gt 0 ] || set -- "${SHELL:-/bin/sh}"
+    [ $# -gt 0 ] || set -- "${SHELL:-/bin/bash}"
 
     # shellcheck disable=SC2016
-    exec /usr/bin/nsenter -m -u -i -p -C -t "$WSLX_INIT_PID" -- "${SHELL:-/bin/sh}" -c '
+    exec /usr/bin/nsenter -m -u -i -p -C -t "$WSLX_INIT_PID" -- sh -c '
         if [ -d "${WSLX_WORK_DIR:="/"}" ]; then
             cd "$WSLX_WORK_DIR" 2>/dev/null || true
         fi
