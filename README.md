@@ -7,13 +7,13 @@ sandbox 是一个 Linux 环境的沙盒工具脚本，用于在隔离的环境�
 要安装 `sandbox`，请运行以下命令：
 
 ```bash
-bash -c "$(curl -fsSL https://raw.githubusercontent.com/pierreown/sandbox/main/install.sh)"
+bash -c "$(curl -fsSL https://raw.githubusercontent.com/pierreown/sandbox-script/main/install.sh)"
 ```
 
 使用 CDN 加速：(可能会因为 CDN 缓存影响导致脚本版本不一致)
 
 ```bash
-bash -c "$(curl -fsSL https://cdn.jsdelivr.net/gh/pierreown/sandbox@main/install.sh)" -- --cdn
+bash -c "$(curl -fsSL https://cdn.jsdelivr.net/gh/pierreown/sandbox-script@main/install.sh)" -- --cdn
 ```
 
 ### 用法
