@@ -50,7 +50,8 @@ setup_sandbox() {
     export SBOX_ENV_NAME="${_NAME}"
     export SBOX_ENV_BASE_DIR="${_BASE_DIR}"
     export SBOX_ENV_WORK_DIR="${_WORK_DIR:-$(pwd)}"
-    export SBOX_ENV_SHELL="${SHELL}"
+
+    [ $# -gt 0 ] || set -- "${SHELL:-/bin/sh}"
 
     # temp sandbox need cleanup by trap, cannot use 'exec'
     if [ "${_IS_TEMP}" -eq 1 ]; then
@@ -66,7 +67,6 @@ setup_sandbox_fork() {
     _NAME="${SBOX_ENV_NAME:?}"
     _BASE_DIR="${SBOX_ENV_BASE_DIR:?}"
     _WORK_DIR="${SBOX_ENV_WORK_DIR}"
-    _SHELL="${SBOX_ENV_SHELL}"
 
     # check sandbox directory
     if [ ! -d "$_BASE_DIR" ]; then
@@ -122,12 +122,9 @@ setup_sandbox_fork() {
 
     # cleanup environment
     unset OLDPWD
-    unset SBOX_ENV_FORK SBOX_ENV_NAME SBOX_ENV_BASE_DIR SBOX_ENV_WORK_DIR SBOX_ENV_SHELL
+    unset SBOX_ENV_FORK SBOX_ENV_NAME SBOX_ENV_BASE_DIR SBOX_ENV_WORK_DIR
 
     # execute
-    if [ $# -eq 0 ]; then
-        set -- "${_SHELL:-/bin/sh}"
-    fi
     exec "$@"
 }
 

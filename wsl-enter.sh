@@ -56,14 +56,15 @@ enter_sandbox() {
 
     # export variables for child process
     export SBOX_ENV_WORK_DIR="${_WORK_DIR}"
-    export SBOX_ENV_SHELL="${SHELL}"
 
     # got init process, enter its namespace and exec shell
+
+    [ $# -gt 0 ] || set -- "${SHELL:-/bin/sh}"
+
     # not use '-W' flag, because work directory may be not exist
     # shellcheck disable=SC2016
     exec nsenter -m -u -i -p -C -t "${_INIT_PID}" -- sh -c '
         _WORK_DIR="${SBOX_ENV_WORK_DIR}"
-        _SHELL="${SBOX_ENV_SHELL}"
 
         # change work directory
         if [ -d "${_WORK_DIR:="/"}" ]; then
@@ -71,13 +72,10 @@ enter_sandbox() {
         fi
 
         # cleanup environment
-        # unset OLDPWD
-        unset SBOX_ENV_WORK_DIR SBOX_ENV_SHELL
+        unset OLDPWD
+        unset SBOX_ENV_WORK_DIR
 
         # execute
-        if [ $# -eq 0 ]; then
-            set -- "${_SHELL:-/bin/sh}"
-        fi
         exec "$@"
     ' -- "$@"
 }
