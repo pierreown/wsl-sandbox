@@ -126,8 +126,7 @@ setup_sandbox_fork() {
 
     # execute
     if [ $# -eq 0 ]; then
-        { [ -n "${_SHELL}" ] || [ ! -x "${_SHELL}" ]; } && _SHELL="/bin/sh"
-        set -- "${_SHELL:?}"
+        set -- "${_SHELL:-/bin/sh}"
     fi
     exec "$@"
 }
