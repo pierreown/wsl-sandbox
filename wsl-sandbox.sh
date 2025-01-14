@@ -10,7 +10,6 @@ setup_sandbox() {
     _PID_NAME="${SBOX_PID_NAME:?}"
     _NAME="${SBOX_ENV_NAME}"
     _PID_FILE_CUSTOM="${SBOX_ENV_PID_FILE}"
-    _WORK_DIR="${SBOX_ENV_WORK_DIR}"
     _DIR_NAME="" _IS_TEMP=0
 
     if [ -n "${_NAME}" ]; then
@@ -49,8 +48,9 @@ setup_sandbox() {
     export SBOX_ENV_FORK=1
     export SBOX_ENV_NAME="${_NAME}"
     export SBOX_ENV_BASE_DIR="${_BASE_DIR}"
-    export SBOX_ENV_WORK_DIR="${_WORK_DIR:-$(pwd)}"
+    export SBOX_ENV_WORK_DIR="${SBOX_ENV_WORK_DIR:-$(pwd)}"
 
+    # default exec shell
     [ $# -gt 0 ] || set -- "${SHELL:-/bin/sh}"
 
     # temp sandbox need cleanup by trap, cannot use 'exec'

@@ -57,10 +57,10 @@ enter_sandbox() {
     # export variables for child process
     export SBOX_ENV_WORK_DIR="${_WORK_DIR}"
 
-    # got init process, enter its namespace and exec shell
-
+    # default exec shell
     [ $# -gt 0 ] || set -- "${SHELL:-/bin/sh}"
 
+    # enter its namespace and exec shell
     # not use '-W' flag, because work directory may be not exist
     # shellcheck disable=SC2016
     exec nsenter -m -u -i -p -C -t "${_INIT_PID}" -- sh -c '
