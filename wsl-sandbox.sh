@@ -33,10 +33,10 @@ setup_sandbox() {
     # create sandbox directory
     mkdir -p "${_BASE_DIR}"
 
-    # create default PID file
+    # create default pid file
     echo "$$" >"${_PID_FILE}"
 
-    # create custom PID file
+    # create custom pid file
     if [ -n "${_PID_FILE_CUSTOM}" ]; then
         mkdir -p "$(dirname "${_PID_FILE_CUSTOM}")"
         echo "$$" >"${_PID_FILE_CUSTOM}"

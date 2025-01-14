@@ -1,54 +1,55 @@
 #!/bin/sh
 
+# custom pid file
 SBOX_ZERO_PID_FILE="/var/run/wsl-init-sandbox.pid"
 
 wait_for_init() {
     _TIMES=0
 
-    # Maximum 20 times of attempts
+    # maximum 20 times of attempts
     while [ $_TIMES -lt 20 ]; do
         _ZERO_PID="" _ZERO_PID_FILE="${SBOX_ZERO_PID_FILE}"
         _INIT_PID="" _INIT_PID_FILE=""
         _INIT_CMD="" _INIT_CMD_FILE=""
 
-        # Get zero pid
+        # find zero pid
         [ -n "$_ZERO_PID_FILE" ] && [ -f "$_ZERO_PID_FILE" ] && read -r _ZERO_PID _READ_ <"$_ZERO_PID_FILE" 2>/dev/null
         [ -n "$_ZERO_PID" ] && _INIT_PID_FILE="/proc/${_ZERO_PID}/task/${_ZERO_PID}/children"
 
         while true; do
-            # Get init pid
+            # find init process pid
             [ -n "$_INIT_PID_FILE" ] && [ -f "$_INIT_PID_FILE" ] && read -r _INIT_PID _READ_ <"$_INIT_PID_FILE" 2>/dev/null
             [ -n "$_INIT_PID" ] && _INIT_CMD_FILE="/proc/${_INIT_PID}/comm"
 
-            # Get init command
+            # find init process command
             [ -n "$_INIT_CMD_FILE" ] && [ -f "$_INIT_CMD_FILE" ] && read -r _INIT_CMD _READ_ <"$_INIT_CMD_FILE" 2>/dev/null
 
-            # Process is unshare, then get its children
+            # process is unshare, then get its children
             [ "${_INIT_CMD##*/}" = 'unshare' ] && _INIT_PID_FILE="/proc/${_INIT_PID}/task/${_INIT_PID}/children" && continue
 
-            # Process is not unshare, break
+            # process is not unshare, break
             break
         done
 
-        # Found init process, break
+        # found init process, break
         if [ -n "$_INIT_PID" ]; then
             SBOX_INIT_PID="${_INIT_PID}"
             break
         fi
 
-        # Not found init process, wait and retry
+        # not found init process, wait and retry
         sleep .5
         _TIMES=$((_TIMES + 1))
     done
 }
 
 enter_sandbox() {
-    # Wait for init process
+    # wait for init process
     wait_for_init
 
     _INIT_PID="${SBOX_INIT_PID}"
 
-    # Cannot get init process, exit
+    # cannot get init process, exit
     [ -n "$_INIT_PID" ] || return
 
     _WORK_DIR="$(pwd)"
@@ -58,7 +59,7 @@ enter_sandbox() {
     export SBOX_ENV_WORK_DIR="${_WORK_DIR}"
     export SBOX_ENV_SHELL="${SHELL}"
 
-    # Got init process, enter its namespace and exec shell
+    # got init process, enter its namespace and exec shell
     exec /usr/bin/nsenter -m -u -i -p -C -t "$_INIT_PID" -- "$0" "$@"
 }
 
