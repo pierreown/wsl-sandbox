@@ -10,7 +10,7 @@ safe_string() {
 }
 
 random_string() {
-    head -c "$1" /dev/urandom | base64 | head -c "$1"
+    head -c "$1" /dev/urandom | md5sum | head -c "$1"
 }
 
 setup_sandbox() {
