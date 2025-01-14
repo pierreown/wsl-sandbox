@@ -37,6 +37,7 @@ setup_sandbox() {
 
     _BASE_DIR="${_PREFIX}/${_DIR_NAME}"
     _PID_FILE="${_BASE_DIR}/${_PID_NAME}"
+    _INIT_FLAG="$([ ! -e "${_BASE_DIR}" ] && echo "1")"
 
     # create sandbox directory
     mkdir -p "${_BASE_DIR}"
@@ -56,6 +57,7 @@ setup_sandbox() {
     # export variables for child process
     export SBOX_ENV_FORK=1
     export SBOX_ENV_NAME="${_NAME}"
+    export SBOX_ENV_INIT_FLAG="${_INIT_FLAG}"
     export SBOX_ENV_BASE_DIR="${_BASE_DIR}"
     export SBOX_ENV_WORK_DIR="${SBOX_ENV_WORK_DIR:-$(pwd)}"
 
@@ -74,9 +76,10 @@ setup_sandbox() {
 setup_sandbox_fork() {
     _PREFIX="${SBOX_PREFIX:?}"
     _NAME="${SBOX_ENV_NAME:?}"
+    _INIT_FLAG="${SBOX_ENV_INIT_FLAG}"
     _BASE_DIR="${SBOX_ENV_BASE_DIR:?}"
     _WORK_DIR="${SBOX_ENV_WORK_DIR}"
-    _HOLD_HOSTNAME="${SBOX_ENV_HOLD_HOSTNAME}"
+    _HOLD_SYSINFO="${SBOX_ENV_HOLD_SYSINFO}"
 
     # check sandbox directory
     if [ ! -d "$_BASE_DIR" ]; then
@@ -103,7 +106,7 @@ setup_sandbox_fork() {
 
     # create config files
     mkdir -p "${_OVER_CONF}/etc"
-    [ "${_HOLD_HOSTNAME}" = "1" ] || echo "${_NAME}" >"${_OVER_CONF}/etc/hostname"
+    [ "${_HOLD_SYSINFO}" = "1" ] || echo "${_NAME}" >"${_OVER_CONF}/etc/hostname"
 
     # mount overlay directory
     mount -t overlay overlay -o "lowerdir=${_OVER_CONF}:/,upperdir=${_OVER_UPPER},workdir=${_OVER_WORK}" "${_ROOT_DIR}"
@@ -140,11 +143,13 @@ setup_sandbox_fork() {
     fi
 
     # settings
-    [ "${_HOLD_HOSTNAME}" = "1" ] || hostname "${_NAME}"
+    if [ "${_INIT_FLAG}" = "1" ]; then
+        [ "${_HOLD_SYSINFO}" = "1" ] || hostname "${_NAME}"
+    fi
 
     # cleanup environment
     unset OLDPWD
-    unset SBOX_ENV_FORK SBOX_ENV_NAME SBOX_ENV_BASE_DIR SBOX_ENV_WORK_DIR SBOX_ENV_HOLD_HOSTNAME
+    unset SBOX_ENV_FORK SBOX_ENV_NAME SBOX_ENV_BASE_DIR SBOX_ENV_WORK_DIR SBOX_ENV_HOLD_SYSINFO
 
     # execute
     exec "$@"
