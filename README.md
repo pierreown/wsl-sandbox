@@ -29,6 +29,8 @@ wsl-sandbox /sbin/init      # 在隔离的环境中启动 init 进程
 
 ### 针对 wsl 的功能
 
+WSL2 目前已支持启动 systemd，本脚本提供另一种启动方式。同时也支持启动非 systemd 的 init 进程。
+
 ```bash
 # linux
 wsl-init enable                                 # 开启 /sbin/init 自启动
