@@ -37,7 +37,7 @@ setup_sandbox() {
 
     _BASE_DIR="${_PREFIX}/${_DIR_NAME}"
     _PID_FILE="${_BASE_DIR}/${_PID_NAME}"
-    _INIT_FLAG="$([ ! -e "${_BASE_DIR}" ] && echo "1")"
+    [ -e "${_BASE_DIR}" ] || _INIT_FLAG="1"
 
     # create sandbox directory
     mkdir -p "${_BASE_DIR}"
