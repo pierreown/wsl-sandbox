@@ -72,7 +72,7 @@ enter_sandbox_fork() {
     fi
 
     # cleanup environment
-    unset OLDPWD
+    # unset OLDPWD
     unset SBOX_ENV_FORK SBOX_ENV_WORK_DIR SBOX_ENV_SHELL
 
     # execute
@@ -80,7 +80,6 @@ enter_sandbox_fork() {
         { [ -n "${_SHELL}" ] || [ ! -x "${_SHELL}" ]; } && _SHELL="/bin/sh"
         set -- "${_SHELL:?}"
     fi
-    echo "$@"
     exec "$@"
 }
 
