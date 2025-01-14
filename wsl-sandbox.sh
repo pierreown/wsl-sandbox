@@ -67,6 +67,7 @@ setup_sandbox_fork() {
     _NAME="${SBOX_ENV_NAME:?}"
     _BASE_DIR="${SBOX_ENV_BASE_DIR:?}"
     _WORK_DIR="${SBOX_ENV_WORK_DIR}"
+    _DISABLE_SET_PS1="${SBOX_ENV_DISABLE_SET_PS1}"
 
     # check sandbox directory
     if [ ! -d "$_BASE_DIR" ]; then
@@ -123,6 +124,9 @@ setup_sandbox_fork() {
     # cleanup environment
     unset OLDPWD
     unset SBOX_ENV_FORK SBOX_ENV_NAME SBOX_ENV_BASE_DIR SBOX_ENV_WORK_DIR
+
+    # export SUDO_PS1="\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\] $ "
+    # export PS1="\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\] $ "
 
     # execute
     exec "$@"
