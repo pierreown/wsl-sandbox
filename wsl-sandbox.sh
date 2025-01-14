@@ -90,14 +90,12 @@ setup_sandbox_fork() {
     mkdir -p "${_OVER_UPPER}" "${_OVER_WORK}" "${_ROOT_DIR}"
 
     # hide some path
-    if type mknod >/dev/null 2>&1; then
-        for _ITEM in "${_PREFIX}" "/init"; do
-            if [ -e "${_ITEM}" ] && [ ! -e "${_OVER_UPPER}${_ITEM}" ]; then
-                mkdir -p "$(dirname "${_OVER_UPPER}${_ITEM}")"
-                mknod "${_OVER_UPPER}${_ITEM}" c 0 0 # create a placeholder character device
-            fi
-        done
-    fi
+    for _ITEM in "${_PREFIX}" "/init"; do
+        if [ -e "${_ITEM}" ] && [ ! -e "${_OVER_UPPER}${_ITEM}" ]; then
+            mkdir -p "$(dirname "${_OVER_UPPER}${_ITEM}")"
+            mknod "${_OVER_UPPER}${_ITEM}" c 0 0 # create a placeholder character device
+        fi
+    done
 
     # mount tmpfs config directory
     _OVER_CONF="${_BASE_DIR}/conf"
