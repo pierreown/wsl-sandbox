@@ -45,3 +45,5 @@ wsl -d {distribution} wsl-init disable          # 禁用 /sbin/init 自启动
 -   开启 wsl-init 后, 如不想进入 wsl-init 命名空间, 可在宿主机中使用 `wsl -d {distribution} bash` 进入原始命名空间。
 
 -   使用中遇到问题，可在宿主机中使用 `wsl -d {distribution} wsl-init disable` 禁用 wsl-init。
+
+-   如需恢复重置系统，只需在原始命名空间中删除 /var/lib/wsl-sandbox/wsl-init 目录即可。
