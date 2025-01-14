@@ -15,13 +15,14 @@ setup_sandbox() {
     if [ -n "${_NAME}" ]; then
         # named sandbox is permanent
         _IS_TEMP=0
+        _NAME="$(echo "${_NAME}" | tr -c 'a-zA-Z0-9._-' '_')"
         _DIR_NAME="${_NAME}"
     else
         # non-named sandbox is temp
         _IS_TEMP=1
         while true; do
-            _NAME="$(mktemp -u SB-XXXXXX)"
-            _DIR_NAME="TEMP-${_NAME}"
+            _NAME="$(mktemp -u XXXXXX)"
+            _DIR_NAME="TMP.${_NAME}"
             [ ! -e "${_PREFIX}/${_DIR_NAME}" ] && break
         done
     fi
@@ -87,8 +88,17 @@ setup_sandbox_fork() {
         done
     fi
 
-    # mount overlay filesystem
-    mount -t overlay overlay -o "lowerdir=/,upperdir=${_OVER_UPPER},workdir=${_OVER_WORK}" "${_ROOT_DIR}"
+    # mount tmpfs config directory
+    _OVER_CONF="${_BASE_DIR}/conf"
+    mkdir -p "${_OVER_CONF}"
+    mount -t tmpfs tmpfs "${_OVER_CONF}"
+
+    # create config files
+    mkdir -p "${_OVER_CONF}/etc"
+    echo "${_NAME}" >"${_OVER_CONF}/etc/hostname"
+
+    # mount overlay directory
+    mount -t overlay overlay -o "lowerdir=${_OVER_CONF}:/,upperdir=${_OVER_UPPER},workdir=${_OVER_WORK}" "${_ROOT_DIR}"
 
     # mount nested directory
     mkdir -p "${_BASE_DIR}/nested" "${_ROOT_DIR}${_PREFIX}"
