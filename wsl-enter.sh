@@ -55,38 +55,31 @@ enter_sandbox() {
     _WORK_DIR="$(pwd)"
 
     # export variables for child process
-    export SBOX_ENV_FORK=1
     export SBOX_ENV_WORK_DIR="${_WORK_DIR}"
     export SBOX_ENV_SHELL="${SHELL}"
 
     # got init process, enter its namespace and exec shell
-    exec /usr/bin/nsenter -m -u -i -p -C -t "$_INIT_PID" -- "$0" "$@"
+    # shellcheck disable=SC2016
+    exec /usr/bin/nsenter -m -u -i -p -C -t "$_INIT_PID" -- sh -c '
+        _WORK_DIR="${SBOX_ENV_WORK_DIR}"
+        _SHELL="${SBOX_ENV_SHELL}"
+
+        # change work directory
+        if [ -d "${_WORK_DIR:="/"}" ]; then
+            cd "${_WORK_DIR}" 2>/dev/null || true
+        fi
+
+        # cleanup environment
+        # unset OLDPWD
+        unset SBOX_ENV_WORK_DIR SBOX_ENV_SHELL
+
+        # execute
+        if [ $# -eq 0 ]; then
+            { [ -n "${_SHELL}" ] || [ ! -x "${_SHELL}" ]; } && _SHELL="/bin/sh"
+            set -- "${_SHELL:?}"
+        fi
+        exec "$@"
+    ' -- "$@"
 }
-
-enter_sandbox_fork() {
-    _WORK_DIR="${SBOX_ENV_WORK_DIR}"
-    _SHELL="${SBOX_ENV_SHELL}"
-
-    # change work directory
-    if [ -d "${_WORK_DIR:="/"}" ]; then
-        cd "${_WORK_DIR}" 2>/dev/null || true
-    fi
-
-    # cleanup environment
-    # unset OLDPWD
-    unset SBOX_ENV_FORK SBOX_ENV_WORK_DIR SBOX_ENV_SHELL
-
-    # execute
-    if [ $# -eq 0 ]; then
-        { [ -n "${_SHELL}" ] || [ ! -x "${_SHELL}" ]; } && _SHELL="/bin/sh"
-        set -- "${_SHELL:?}"
-    fi
-    exec "$@"
-}
-
-if [ "${SBOX_ENV_FORK}" = "1" ]; then
-    enter_sandbox_fork "$@"
-    exit
-fi
 
 enter_sandbox "$@"
