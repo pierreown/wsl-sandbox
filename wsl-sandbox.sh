@@ -5,6 +5,14 @@ set -e
 SBOX_PREFIX="/var/lib/wsl-sandbox"
 SBOX_PID_NAME="box.pid"
 
+safe_string() {
+    echo "$1" | tr -c 'a-zA-Z0-9._-' '_'
+}
+
+random_string() {
+    head -c "$1" /dev/urandom | base64 | head -c "$1"
+}
+
 setup_sandbox() {
     _PREFIX="${SBOX_PREFIX:?}"
     _PID_NAME="${SBOX_PID_NAME:?}"
@@ -15,13 +23,13 @@ setup_sandbox() {
     if [ -n "${_NAME}" ]; then
         # named sandbox is permanent
         _IS_TEMP=0
-        _NAME="$(echo "${_NAME}" | tr -c 'a-zA-Z0-9._-' '_')"
+        _NAME="$(safe_string "${_NAME}")"
         _DIR_NAME="${_NAME}"
     else
         # non-named sandbox is temp
         _IS_TEMP=1
         while true; do
-            _NAME="$(mktemp -u XXXXXX)"
+            _NAME="$(random_string 16)"
             _DIR_NAME="TMP.${_NAME}"
             [ ! -e "${_PREFIX}/${_DIR_NAME}" ] && break
         done
@@ -68,7 +76,7 @@ setup_sandbox_fork() {
     _NAME="${SBOX_ENV_NAME:?}"
     _BASE_DIR="${SBOX_ENV_BASE_DIR:?}"
     _WORK_DIR="${SBOX_ENV_WORK_DIR}"
-    _DISABLE_SET_PS1="${SBOX_ENV_DISABLE_SET_PS1}"
+    _HOLD_HOSTNAME="${SBOX_ENV_HOLD_HOSTNAME}"
 
     # check sandbox directory
     if [ ! -d "$_BASE_DIR" ]; then
@@ -95,7 +103,7 @@ setup_sandbox_fork() {
 
     # create config files
     mkdir -p "${_OVER_CONF}/etc"
-    echo "${_NAME}" >"${_OVER_CONF}/etc/hostname"
+    [ "${_HOLD_HOSTNAME}" = "1" ] || echo "${_NAME}" >"${_OVER_CONF}/etc/hostname"
 
     # mount overlay directory
     mount -t overlay overlay -o "lowerdir=${_OVER_CONF}:/,upperdir=${_OVER_UPPER},workdir=${_OVER_WORK}" "${_ROOT_DIR}"
@@ -131,12 +139,12 @@ setup_sandbox_fork() {
         cd "${_WORK_DIR}" 2>/dev/null || true
     fi
 
+    # settings
+    [ "${_HOLD_HOSTNAME}" = "1" ] || hostname "${_NAME}"
+
     # cleanup environment
     unset OLDPWD
-    unset SBOX_ENV_FORK SBOX_ENV_NAME SBOX_ENV_BASE_DIR SBOX_ENV_WORK_DIR
-
-    # export SUDO_PS1="\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\] $ "
-    # export PS1="\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\] $ "
+    unset SBOX_ENV_FORK SBOX_ENV_NAME SBOX_ENV_BASE_DIR SBOX_ENV_WORK_DIR SBOX_ENV_HOLD_HOSTNAME
 
     # execute
     exec "$@"
