@@ -80,6 +80,7 @@ enter_sandbox_fork() {
         { [ -n "${_SHELL}" ] || [ ! -x "${_SHELL}" ]; } && _SHELL="/bin/sh"
         set -- "${_SHELL:?}"
     fi
+    echo "$@"
     exec "$@"
 }
 
