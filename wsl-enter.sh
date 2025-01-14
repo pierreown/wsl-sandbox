@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 SBOX_ZERO_PID_FILE="/var/run/wsl-init-sandbox.pid"
 

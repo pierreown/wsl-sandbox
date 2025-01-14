@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 export E_RED="\033[31m"
 export E_GRE="\033[32m"
@@ -56,13 +56,13 @@ END {
 ini() { cp -f -- "$1" "${1}.old" && awk -F'=' -v SECTION="$2" -v KEY="$3" -v NEW_VALUE="$4" "$AWK_SET_MODULE" "${1}.old" >"$1"; }
 
 fmt() {
-    local FMT_TYPE="$1"
-    case "$FMT_TYPE" in
+    _FMT_TYPE="$1"
+    case "$_FMT_TYPE" in
     TIT) shift && printf "${E_BLU}--- %s ---${E_PLA}\n" "$*" && return ;;
-    SUC) shift && printf "${E_GRE}%s${E_PLA} " "$FMT_TYPE" ;;
-    ERR) shift && printf "${E_RED}%s${E_PLA} " "$FMT_TYPE" ;;
-    WRN | TIP) shift && printf "${E_YEL}%s${E_PLA} " "$FMT_TYPE" ;;
-    INF) shift && printf "${E_YEL}%s${E_PLA} " "$FMT_TYPE" ;;
+    SUC) shift && printf "${E_GRE}%s${E_PLA} " "$_FMT_TYPE" ;;
+    ERR) shift && printf "${E_RED}%s${E_PLA} " "$_FMT_TYPE" ;;
+    WRN | TIP) shift && printf "${E_YEL}%s${E_PLA} " "$_FMT_TYPE" ;;
+    INF) shift && printf "${E_YEL}%s${E_PLA} " "$_FMT_TYPE" ;;
     esac
     printf "%s\n" "$*"
 }
