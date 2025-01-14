@@ -6,7 +6,7 @@ SBOX_PREFIX="/var/lib/wsl-sandbox"
 SBOX_PID_NAME="box.pid"
 
 safe_string() {
-    echo "$1" | tr -c 'a-zA-Z0-9._-' '_'
+    printf "%s" "$1" | tr -c 'a-zA-Z0-9._-' '_'
 }
 
 random_string() {
