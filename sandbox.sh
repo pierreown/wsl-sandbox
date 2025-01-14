@@ -2,7 +2,7 @@
 
 set -e
 
-SBOX_PREFIX="/var/lib/sandbox"
+SBOX_PREFIX="/sandbox"
 SBOX_PID_NAME="box.pid"
 
 safe_string() {

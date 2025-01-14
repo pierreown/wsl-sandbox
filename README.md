@@ -46,4 +46,4 @@ wsl -d {distribution} wsl-init disable          # 禁用 /sbin/init 自启动
 
 -   使用中遇到问题，可在宿主机中使用 `wsl -d {distribution} wsl-init disable` 禁用 wsl-init。
 
--   如需重置系统，只需在原始命名空间中删除 /var/lib/sandbox/wsl-init 目录即可。
+-   如需重置系统，只需在原始命名空间中删除 /sandbox/wsl-init 目录即可。
