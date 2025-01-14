@@ -7,13 +7,19 @@ sandbox 是一个 Linux 环境的沙盒工具脚本，用于在隔离的环境�
 要安装 `sandbox`，请运行以下命令：
 
 ```bash
+bash -c "$(wget -qO- https://raw.githubusercontent.com/pierreown/sandbox-script/main/install.sh)"
+```
+
+或
+
+```bash
 bash -c "$(curl -fsSL https://raw.githubusercontent.com/pierreown/sandbox-script/main/install.sh)"
 ```
 
 使用 CDN 加速：(可能会因为 CDN 缓存影响导致脚本版本不一致)
 
 ```bash
-bash -c "$(curl -fsSL https://cdn.jsdelivr.net/gh/pierreown/sandbox-script@main/install.sh)" -- --cdn
+bash -c "$(wget -fsSL https://cdn.jsdelivr.net/gh/pierreown/sandbox-script@main/install.sh)" -- --cdn
 ```
 
 ### 用法
@@ -47,3 +53,32 @@ wsl -d {distribution} wsl-init disable          # 禁用 /sbin/init 自启动
 -   开启 wsl-init 后, 如不想进入 wsl-init 命名空间, 可在宿主机中使用 `wsl -d {distribution} bash` 进入原始命名空间。
 
 -   使用中遇到问题，可在宿主机中使用 `wsl -d {distribution} wsl-init disable` 禁用 wsl-init。
+
+### 禁用和 wsl 不兼容的服务
+
+在启动 /sbin/init 前，需要禁用不兼容的服务。
+
+-   systemd (下列服务因系统不同，有些本身就不存在，忽略即可)
+
+    ```bash
+    systemctl disable NetworkManager.service 2>/dev/null
+    systemctl disable systemd-networkd.socket systemd-networkd.service 2>/dev/null
+    systemctl disable systemd-resolved.service 2>/dev/null
+
+    systemctl mask NetworkManager.service
+    systemctl mask systemd-networkd.socket systemd-networkd.service
+    systemctl mask systemd-resolved.service
+    systemctl mask systemd-tmpfiles-setup.service
+    systemctl mask systemd-tmpfiles-clean.service
+    systemctl mask systemd-tmpfiles-clean.timer
+    systemctl mask systemd-tmpfiles-setup-dev-early.service
+    systemctl mask systemd-tmpfiles-setup-dev.service
+    systemctl mask systemd-binfmt.service
+    systemctl mask tmp.mount
+    ```
+
+-   openrc
+
+    ```bash
+    rc-update del networking default
+    ```
