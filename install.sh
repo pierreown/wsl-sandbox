@@ -103,20 +103,20 @@ install_dependencies() {
 download_scripts() {
     fmt TIT "Download & Install"
 
-    _BASE_URL="https://raw.githubusercontent.com/pierreown/wsl-sandbox/main"
-    _PREFIX="/usr/local/wsl-sandbox"
+    _BASE_URL="https://raw.githubusercontent.com/pierreown/sandbox/main"
+    _PREFIX="/usr/local/sandbox"
     _LINKED_PATH="/usr/local/bin"
 
     if [ "$FLAG_CDN" -eq 1 ]; then
         fmt INF "Use CDN"
-        _BASE_URL="https://cdn.jsdelivr.net/gh/pierreown/wsl-sandbox@main"
+        _BASE_URL="https://cdn.jsdelivr.net/gh/pierreown/sandbox@main"
     fi
 
     # Cleanup old files
     { rm -rf "${_PREFIX}" && mkdir -p "${_PREFIX}"; } || true
 
     # Download Scripts
-    set -- wsl-sandbox.sh wsl-init.sh wsl-boot.sh wsl-enter.sh
+    set -- sandbox.sh wsl-init.sh wsl-boot.sh wsl-enter.sh
     for _ITEM in "$@"; do
         if wget -q -t 3 -w 1 -T 5 -O "${_PREFIX}/${_ITEM}" "${_BASE_URL}/${_ITEM}"; then
             chmod +x "${_PREFIX}/${_ITEM}"
@@ -127,7 +127,7 @@ download_scripts() {
     done
 
     # Create Symlink
-    set -- wsl-sandbox.sh wsl-init.sh
+    set -- sandbox.sh wsl-init.sh
     for _ITEM in "$@"; do
         ln -sf "${_PREFIX}/${_ITEM}" "${_LINKED_PATH}/${_ITEM%.sh}"
         fmt SUC "Linked ${_PREFIX}/${_ITEM} => ${_LINKED_PATH}/${_ITEM%.sh}"

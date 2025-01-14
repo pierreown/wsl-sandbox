@@ -1,30 +1,30 @@
-# wsl-sandbox
+# sandbox
 
-wsl-sandbox 是一个 Linux 环境的沙盒工具脚本，用于在隔离的环境中运行 Linux 命令。可用于测试、开发和演示等场景，如搭建临时编译环境。
+sandbox 是一个 Linux 环境的沙盒工具脚本，用于在隔离的环境中运行 Linux 命令。可用于测试、开发和演示等场景，如搭建临时编译环境。
 
 ### 安装
 
-要安装 `wsl-sandbox`，请运行以下命令：
+要安装 `sandbox`，请运行以下命令：
 
 ```bash
-bash -c "$(curl -fsSL https://raw.githubusercontent.com/pierreown/wsl-sandbox/main/install.sh)"
+bash -c "$(curl -fsSL https://raw.githubusercontent.com/pierreown/sandbox/main/install.sh)"
 ```
 
 使用 CDN 加速：(可能会因为 CDN 缓存影响导致脚本版本不一致)
 
 ```bash
-bash -c "$(curl -fsSL https://cdn.jsdelivr.net/gh/pierreown/wsl-sandbox@main/install.sh)" -- --cdn
+bash -c "$(curl -fsSL https://cdn.jsdelivr.net/gh/pierreown/sandbox@main/install.sh)" -- --cdn
 ```
 
 ### 用法
 
 ```bash
-wsl-sandbox                 # 在隔离的环境中启动 SHELL
-wsl-sandbox [command]       # 在隔离的环境中执行命令
-wsl-sandbox /sbin/init      # 在隔离的环境中启动 init 进程
+sandbox                 # 在隔离的环境中启动 SHELL
+sandbox [command]       # 在隔离的环境中执行命令
+sandbox /sbin/init      # 在隔离的环境中启动 init 进程
 ```
 
--   每条 wsl-sandbox 命令都是临时且相互隔离的，命令退出后会自动销毁其环境。
+-   每条 sandbox 命令都是临时且相互隔离的，命令退出后会自动销毁其环境。
 -   沙盒环境支持嵌套
 
 ### 针对 wsl 的功能
@@ -46,4 +46,4 @@ wsl -d {distribution} wsl-init disable          # 禁用 /sbin/init 自启动
 
 -   使用中遇到问题，可在宿主机中使用 `wsl -d {distribution} wsl-init disable` 禁用 wsl-init。
 
--   如需重置系统，只需在原始命名空间中删除 /var/lib/wsl-sandbox/wsl-init 目录即可。
+-   如需重置系统，只需在原始命名空间中删除 /var/lib/sandbox/wsl-init 目录即可。
