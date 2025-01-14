@@ -59,8 +59,9 @@ enter_sandbox() {
     export SBOX_ENV_SHELL="${SHELL}"
 
     # got init process, enter its namespace and exec shell
+    # not use '-W' flag, because work directory may be not exist
     # shellcheck disable=SC2016
-    exec /usr/bin/nsenter -m -u -i -p -C -t "$_INIT_PID" -- sh -c '
+    exec nsenter -m -u -i -p -C -t "${_INIT_PID}" -- sh -c '
         _WORK_DIR="${SBOX_ENV_WORK_DIR}"
         _SHELL="${SBOX_ENV_SHELL}"
 
