@@ -67,9 +67,9 @@ setup_sandbox() {
     # temp sandbox need cleanup by trap, cannot use 'exec'
     if [ "${_IS_TEMP}" -eq 1 ]; then
         trap '[ -n "${SBOX_ENV_BASE_DIR}" ] && rm -rf "${SBOX_ENV_BASE_DIR}"' EXIT
-        unshare -m -u -i -p -C --mount-proc --propagation slave -f -- "$0" "$@"
+        unshare -m -u -i -C -p -f --mount-proc --propagation slave -- "$0" "$@"
     else
-        exec unshare -m -u -i -p -C --mount-proc --propagation slave -f -- "$0" "$@"
+        exec unshare -m -u -i -C -p -f --mount-proc --propagation slave -- "$0" "$@"
     fi
 }
 
