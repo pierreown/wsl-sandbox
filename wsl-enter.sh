@@ -63,7 +63,7 @@ enter_sandbox() {
     # enter its namespace and exec shell
     # not use '-W' flag, because work directory may be not exist in namespace
     # shellcheck disable=SC2016
-    exec nsenter -m -u -i -p -C -t "${_INIT_PID}" -- sh -c '
+    exec nsenter -a -F -t "${_INIT_PID}" -- sh -c '
         _WORK_DIR="${SBOX_ENV_WORK_DIR}"
 
         # change work directory
