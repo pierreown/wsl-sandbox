@@ -24,7 +24,7 @@ WORK_DIR="$(pwd)" && : "${WORK_DIR:=/}"
 
 # Enter the namespace of the init process
 exec nsenter --all --preserve-credentials --target "$INIT_PID" -- sh -c "
-    [ -d '${WORK_DIR}' ] && cd '${WORK_DIR}' || true
+    [ -d '$WORK_DIR' ] && cd '$WORK_DIR' || true
     unset OLDPWD
     exec \"\$@\"
 " -- "$@"
