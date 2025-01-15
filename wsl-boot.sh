@@ -43,3 +43,5 @@ echo "$INIT_PID" >"$INIT_PID_FILE"
 
 # Print the init PID
 echo "$INIT_PID"
+
+kill -9 "$BOOT_PID"
