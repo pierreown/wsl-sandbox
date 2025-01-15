@@ -2,7 +2,7 @@
 
 sandbox 是一个 Linux 环境的沙盒工具脚本，用于在隔离的环境中运行 Linux 命令。可用于测试、开发和演示等场景，如搭建临时编译环境。
 
-### 安装
+## 安装
 
 要安装 `sandbox`，请运行以下命令：
 
@@ -22,7 +22,7 @@ bash -c "$(curl -fsSL https://raw.githubusercontent.com/pierreown/sandbox-script
 bash -c "$(wget -fsSL https://cdn.jsdelivr.net/gh/pierreown/sandbox-script@main/install.sh)" -- --cdn
 ```
 
-### 用法
+## 用法
 
 ```bash
 sandbox                 # 在隔离的环境中启动 SHELL
@@ -33,7 +33,7 @@ sandbox /sbin/init      # 在隔离的环境中启动 init 进程
 -   每条 sandbox 命令都是临时且相互隔离的，命令退出后会自动销毁其环境。
 -   沙盒环境支持嵌套一次（两层）
 
-### 针对 wsl 的功能
+## 针对 wsl 的功能
 
 WSL2 目前已支持启动 systemd，本脚本提供另一种启动方式。同时也支持启动非 systemd 的 init 进程。
 
@@ -54,7 +54,7 @@ wsl -d {distribution} wsl-init disable          # 禁用 /sbin/init 自启动
 
 -   使用中遇到问题，可在宿主机中使用 `wsl -d {distribution} wsl-init disable` 禁用 wsl-init。
 
-### 禁用和 wsl 不兼容的服务
+## 禁用和 wsl 不兼容的服务
 
 在启动 /sbin/init 前，需要禁用不兼容的服务。
 
