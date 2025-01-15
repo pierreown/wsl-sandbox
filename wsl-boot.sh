@@ -21,7 +21,7 @@ read -r _ <"$PIPE"
 rm -f "$PIPE"
 
 # Check if the children file exists
-CHILDS_FILE="/proc/${BOOT_PID}/task/${BOOT_PID}/children"
+CHILDS_FILE="/proc/$BOOT_PID/task/$BOOT_PID/children"
 [ -f "$CHILDS_FILE" ] || exit 1
 
 # Read the children PIDs
@@ -30,8 +30,8 @@ set -- "$(cat "$CHILDS_FILE")"
 # Find the init process
 INIT_PID="$1"
 for CHILD_PID in "$@"; do
-    [ -f "/proc/${CHILD_PID}/comm" ] || continue
-    read -r COMM <"/proc/${CHILD_PID}/comm"
+    [ -f "/proc/$CHILD_PID/comm" ] || continue
+    read -r COMM <"/proc/$CHILD_PID}comm"
     [ "${COMM##*/}" = 'init' ] || continue
     INIT_PID="$CHILD_PID"
     break
