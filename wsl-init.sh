@@ -89,7 +89,12 @@ enable_wsl_init() {
     ini '/etc/wsl.conf' 'boot' 'command' '/usr/local/sandbox/wsl-boot.sh'
     fmt SUC "Modified /etc/wsl.conf, saved old file to *.old"
 
-    echo "[ -x /usr/local/sandbox/wsl-enter.sh ] && exec /usr/local/sandbox/wsl-enter.sh" >/etc/profile.d/99-wsl-init-enter.sh
+    cat <<EOF >/etc/profile.d/99-wsl-init-enter.sh
+#!/bin/sh
+if [ -x /usr/local/sandbox/wsl-enter.sh ]; then
+    exec /usr/local/sandbox/wsl-enter.sh
+fi
+EOF
     fmt SUC "Created /etc/profile.d/99-wsl-init-enter.sh"
 }
 
