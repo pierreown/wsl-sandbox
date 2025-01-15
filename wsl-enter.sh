@@ -1,6 +1,6 @@
 #!/bin/sh
 
-[ -z "$SBOX_WSL_ENTER" ] || return
+[ -z "$SBOX_WSL_ENTER" ] || return 0
 export SBOX_WSL_ENTER=1
 
 INIT_PID_FILE="/var/run/sbox-wsl-init.pid"
@@ -14,10 +14,10 @@ while [ $RETRY_TIMES -lt 20 ]; do
     sleep 0.5
     RETRY_TIMES=$((RETRY_TIMES + 1))
 done
-[ -n "$INIT_PID" ] || return
+[ -n "$INIT_PID" ] || return 0
 
 # Exit if process doesn't exist
-[ -e "/proc/$INIT_PID/exe" ] || return
+[ -e "/proc/$INIT_PID/exe" ] || return 0
 
 # Default to shell if no command provided
 [ $# -gt 0 ] || set -- "${SHELL:-/bin/sh}"
