@@ -1,6 +1,6 @@
 #!/bin/sh
 
-[ -n "$SBOX_WSL_ENTER" ] || return
+[ -z "$SBOX_WSL_ENTER" ] || return
 export SBOX_WSL_ENTER=1
 
 INIT_PID_FILE="/var/run/sbox-wsl-init.pid"
