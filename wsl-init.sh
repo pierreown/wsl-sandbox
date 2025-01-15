@@ -91,8 +91,8 @@ enable_wsl_init() {
 
     cat <<EOF >/etc/profile.d/99-wsl-init-enter.sh
 #!/bin/sh
-if [ -x /usr/local/sandbox/wsl-enter.sh ]; then
-    exec /usr/local/sandbox/wsl-enter.sh
+if [ -f /usr/local/sandbox/wsl-enter.sh ]; then
+    . /usr/local/sandbox/wsl-enter.sh
 fi
 EOF
     fmt SUC "Created /etc/profile.d/99-wsl-init-enter.sh"
