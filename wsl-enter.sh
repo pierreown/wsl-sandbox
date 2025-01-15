@@ -35,3 +35,5 @@ if [ -z "$SBOX_WSL_ENTER" ]; then
         exec "$@"
     fi
 fi
+
+unset INIT_PID_FILE FORK_SCRIPT
