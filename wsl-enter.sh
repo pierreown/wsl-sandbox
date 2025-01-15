@@ -30,7 +30,7 @@ if [ -z "$SBOX_WSL_ENTER" ]; then
         export WORK_DIR
 
         # Enter the namespace of the init process
-        exec nsenter --all --preserve-credentials --target "$INIT_PID" -- sh -c "$FORK_SCRIPT" -- "$@"
+        exec nsenter --all --target "$INIT_PID" -- sh -c "$FORK_SCRIPT" -- "$@"
     else
         exec "$@"
     fi
